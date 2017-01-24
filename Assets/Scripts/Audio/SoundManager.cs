@@ -23,8 +23,9 @@ public struct SoundsTracker
     }
 }
 
-public class SoundManager : Singleton<SoundManager>
+public class SoundManager : MonoBehaviour
 {
+    static SoundManager m_instance;
     static float soundVolume = 1;
 
     private static Dictionary<TypeOfSound, string> SoundsListDic = new Dictionary<TypeOfSound, string>() {
@@ -39,6 +40,18 @@ public class SoundManager : Singleton<SoundManager>
         for (int i = 0; i < SoundsListDic.Count; i++)
         {
             SoundsList.Add(Resources.Load<AudioClip>(SoundsListDic[(TypeOfSound)i]));
+        }
+    }
+
+    public static SoundManager Instance
+    {
+        get
+        {
+            if (m_instance == null)
+            {
+                m_instance = FindObjectOfType(typeof(SoundManager)) as SoundManager;
+            }
+            return m_instance;
         }
     }
 
@@ -93,7 +106,7 @@ public class SoundManager : Singleton<SoundManager>
         }
     }
 
-    public static void SetSound(bool playSound)
+    public void SetSound(bool playSound)
     {
         if (playSound)
             soundVolume = 1.0f;

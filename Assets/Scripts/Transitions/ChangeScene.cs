@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.SceneManagement;
 
-public class ChangeScene : Singleton<ChangeScene>
+public class ChangeScene : MonoBehaviour
 {
     Transition Stage;
     CloseCurtainOverride Override;

@@ -6,10 +6,10 @@ public enum TypeOfMusic
     //Insert music name exemple: IntroGame,
 }
 
-public class MusicManager : Singleton<MusicManager>
+public class MusicManager : MonoBehaviour
 {
 
-    static MusicManager instance;
+    static MusicManager m_instance;
     static AudioSource myAudioSource;
 
     private static Dictionary<TypeOfMusic, string> PlayListDic = new Dictionary<TypeOfMusic, string>() {
@@ -17,6 +17,19 @@ public class MusicManager : Singleton<MusicManager>
     };
 
     private static List<AudioClip> PlayList = new List<AudioClip>();
+
+    public static MusicManager Instance
+    {
+        get
+        {
+            if (m_instance == null)
+            {
+                m_instance = FindObjectOfType(typeof(MusicManager)) as MusicManager;
+            }
+            return m_instance;
+        }
+    }
+
 
     void Awake()
     {
@@ -27,7 +40,7 @@ public class MusicManager : Singleton<MusicManager>
         }
     }
 
-    public static void Play(TypeOfMusic index, bool isLooping = false, float balance = 1f)
+    public void Play(TypeOfMusic index, bool isLooping = false, float balance = 1f)
     {
         if (PlayList.Count > 0)
         {

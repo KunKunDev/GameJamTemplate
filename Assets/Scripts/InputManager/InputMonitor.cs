@@ -1,4 +1,5 @@
-﻿using Debugging;
+﻿using System;
+using Debugging;
 using UnityEngine;
 using XInputDotNetPure;
 
@@ -20,6 +21,8 @@ namespace InputManager
 
         #region Events
         private InputSystem.ButtonHandler DispatchOnButton;
+        private InputSystem.StickHandler DispatchOnStick;
+        private InputSystem.TriggerHandler DispatchOnTrigger;
         #endregion
 
         #region Init Methods
@@ -34,9 +37,11 @@ namespace InputManager
             playerIndex = new PlayerIndex[playerCount];
         }
 
-        public void InitButtons(InputSystem.ButtonHandler onButtonADown)
+        public void InitButtons(InputSystem.ButtonHandler onButton, InputSystem.StickHandler onStick, InputSystem.TriggerHandler onTrigger)
         {
-            DispatchOnButton = onButtonADown;
+            DispatchOnButton = onButton;
+            DispatchOnStick = onStick;
+            DispatchOnTrigger = onTrigger;
         }
         #endregion
 
@@ -67,6 +72,8 @@ namespace InputManager
                     state[i] = GamePad.GetState(playerIndex[i]);
 
                     HandleButtons(i);
+                    HandleSticks(i);
+                    HandleTriggers(i);
                 }
             }
         }
@@ -75,60 +82,117 @@ namespace InputManager
         #region Class Methods
         private void HandleButtons(int i)
         {
-            //Button A
-            if (state[i].Buttons.A == ButtonState.Pressed && prevState[i].Buttons.A == ButtonState.Released)
+            HandleButton(i, state[i].Buttons.A, prevState[i].Buttons.A, InputButton.A);
+            HandleButton(i, state[i].Buttons.B, prevState[i].Buttons.B, InputButton.B);
+            HandleButton(i, state[i].Buttons.X, prevState[i].Buttons.X, InputButton.X);
+            HandleButton(i, state[i].Buttons.Y, prevState[i].Buttons.Y, InputButton.Y);
+            HandleButton(i, state[i].Buttons.LeftShoulder, prevState[i].Buttons.LeftShoulder, InputButton.LeftShoulder);
+            HandleButton(i, state[i].Buttons.RightShoulder, prevState[i].Buttons.RightShoulder, InputButton.RightShoulder);
+            HandleButton(i, state[i].Buttons.LeftStick, prevState[i].Buttons.LeftStick, InputButton.LeftStick);
+            HandleButton(i, state[i].Buttons.RightStick, prevState[i].Buttons.RightStick, InputButton.RightStick);
+            HandleButton(i, state[i].Buttons.Start, prevState[i].Buttons.Start, InputButton.Start);
+            HandleButton(i, state[i].Buttons.Back, prevState[i].Buttons.Back, InputButton.Back);
+            HandleButton(i, state[i].Buttons.Guide, prevState[i].Buttons.Guide, InputButton.Guide);
+            HandleButton(i, state[i].DPad.Up, state[i].DPad.Up, InputButton.UpArrow);
+            HandleButton(i, state[i].DPad.Down, state[i].DPad.Down, InputButton.DownArrow);
+            HandleButton(i, state[i].DPad.Left, state[i].DPad.Left, InputButton.LeftArrow);
+            HandleButton(i, state[i].DPad.Right, state[i].DPad.Right, InputButton.RightArrow);
+        }
+
+        private void HandleButton(int i, ButtonState current, ButtonState prev, InputButton type)
+        {
+            if (current == ButtonState.Pressed && prev == ButtonState.Released)
             {
-                DispatchOnButton(i, ButtonType.A, State.Down);
+                DispatchOnButton(i, type, State.Down);
             }
-            else if (state[i].Buttons.A == ButtonState.Pressed)
+            else if (current == ButtonState.Pressed)
             {
-                DispatchOnButton(i, ButtonType.A, State.Pressed);
+                DispatchOnButton(i, type, State.Pressed);
             }
-            else if (state[i].Buttons.A == ButtonState.Released && prevState[i].IsConnected && prevState[i].Buttons.A == ButtonState.Pressed)
+            else if (current == ButtonState.Released && prevState[i].IsConnected && prev == ButtonState.Pressed)
             {
-                DispatchOnButton(i, ButtonType.A, State.Released);
+                DispatchOnButton(i, type, State.Released);
+            }
+        }
+
+        private void HandleSticks(int i)
+        {
+            HandleStick(i, InputStick.LeftStick, state[i].ThumbSticks.Left, prevState[i].ThumbSticks.Left);
+            HandleStick(i, InputStick.RightStick, state[i].ThumbSticks.Right, prevState[i].ThumbSticks.Right);
+        }
+
+        private void HandleStick(int i, InputStick inputStick, GamePadThumbSticks.StickValue current, GamePadThumbSticks.StickValue prev)
+        {
+            if (current.X > 0 && prev.X == 0)
+            {
+                DispatchOnStick(i, inputStick, InputDirection.Right, State.Down);
+            }
+            else if (current.X < 0 && prev.X == 0)
+            {
+                DispatchOnStick(i, inputStick, InputDirection.Left, State.Down);
+            }
+            else if (current.X > 0)
+            {
+                DispatchOnStick(i, inputStick, InputDirection.Right, State.Pressed);
+            }
+            else if (current.X < 0)
+            {
+                DispatchOnStick(i, inputStick, InputDirection.Left, State.Pressed);
+            }
+            else if (current.X == 0 && prevState[i].IsConnected && prev.X > 0)
+            {
+                DispatchOnStick(i, inputStick, InputDirection.Right, State.Released);
+            }
+            else if (current.X == 0 && prevState[i].IsConnected && prev.X < 0)
+            {
+                DispatchOnStick(i, inputStick, InputDirection.Left, State.Released);
             }
 
-            //Button B
-            if (state[i].Buttons.B == ButtonState.Pressed && prevState[i].Buttons.B == ButtonState.Released)
+            if (current.Y > 0 && prev.Y == 0)
             {
-                DispatchOnButton(i, ButtonType.B, State.Down);
+                DispatchOnStick(i, inputStick, InputDirection.Up, State.Down);
             }
-            else if (state[i].Buttons.B == ButtonState.Pressed)
+            else if (current.Y < 0 && prev.Y == 0)
             {
-                DispatchOnButton(i, ButtonType.B, State.Pressed);
+                DispatchOnStick(i, inputStick, InputDirection.Down, State.Down);
             }
-            else if (state[i].Buttons.B == ButtonState.Released && prevState[i].IsConnected && prevState[i].Buttons.B == ButtonState.Pressed)
+            else if (current.Y > 0)
             {
-                DispatchOnButton(i, ButtonType.B, State.Released);
+                DispatchOnStick(i, inputStick, InputDirection.Up, State.Pressed);
             }
+            else if (current.Y < 0)
+            {
+                DispatchOnStick(i, inputStick, InputDirection.Down, State.Pressed);
+            }
+            else if (current.Y == 0 && prevState[i].IsConnected && prev.Y > 0)
+            {
+                DispatchOnStick(i, inputStick, InputDirection.Up, State.Released);
+            }
+            else if (current.Y == 0 && prevState[i].IsConnected && prev.Y < 0)
+            {
+                DispatchOnStick(i, inputStick, InputDirection.Down, State.Released);
+            }
+        }
 
-            //Button X
-            if (state[i].Buttons.X == ButtonState.Pressed && prevState[i].Buttons.X == ButtonState.Released)
-            {
-                DispatchOnButton(i, ButtonType.X, State.Down);
-            }
-            else if (state[i].Buttons.X == ButtonState.Pressed)
-            {
-                DispatchOnButton(i, ButtonType.X, State.Pressed);
-            }
-            else if (state[i].Buttons.X == ButtonState.Released && prevState[i].IsConnected && prevState[i].Buttons.X == ButtonState.Pressed)
-            {
-                DispatchOnButton(i, ButtonType.X, State.Released);
-            }
+        private void HandleTriggers(int i)
+        {
+            HandleTrigger(i, Trigger.Left, state[i].Triggers.Left, prevState[i].Triggers.Left);
+            HandleTrigger(i, Trigger.Right, state[i].Triggers.Right, prevState[i].Triggers.Right);
+        }
 
-            //Button Y
-            if (state[i].Buttons.Y == ButtonState.Pressed && prevState[i].Buttons.Y == ButtonState.Released)
+        private void HandleTrigger(int i, Trigger type, float trigger, float prevTrigger)
+        {
+            if (trigger > 0 && prevTrigger == 0)
             {
-                DispatchOnButton(i, ButtonType.Y, State.Down);
+                DispatchOnTrigger(i, type, State.Down);
             }
-            else if (state[i].Buttons.Y == ButtonState.Pressed)
+            else if (trigger > 0)
             {
-                DispatchOnButton(i, ButtonType.Y, State.Pressed);
+                DispatchOnTrigger(i, type, State.Pressed);
             }
-            else if (state[i].Buttons.Y == ButtonState.Released && prevState[i].IsConnected && prevState[i].Buttons.Y == ButtonState.Pressed)
+            else if (trigger == 0 && prevState[i].IsConnected && prevTrigger > 0)
             {
-                DispatchOnButton(i, ButtonType.Y, State.Released);
+                DispatchOnTrigger(i, type, State.Released);
             }
         }
         #endregion

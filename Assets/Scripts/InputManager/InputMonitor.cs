@@ -20,6 +20,7 @@ namespace InputManager
         #endregion
 
         #region Events
+        private InputSystem.ControllerHandler DispatchOnController;
         private InputSystem.ButtonHandler DispatchOnButton;
         private InputSystem.StickHandler DispatchOnStick;
         private InputSystem.TriggerHandler DispatchOnTrigger;
@@ -28,7 +29,7 @@ namespace InputManager
         #region Init Methods
         public void Init()
         {
-            //init with config file
+            /// TODO: Init with config file
             playerCount = 4;
 
             playerIndexSet = new bool[playerCount];
@@ -37,8 +38,12 @@ namespace InputManager
             playerIndex = new PlayerIndex[playerCount];
         }
 
-        public void InitButtons(InputSystem.ButtonHandler onButton, InputSystem.StickHandler onStick, InputSystem.TriggerHandler onTrigger)
+        public void InitHandlers(InputSystem.ControllerHandler onController,
+                                InputSystem.ButtonHandler onButton,
+                                InputSystem.StickHandler onStick, 
+                                InputSystem.TriggerHandler onTrigger)
         {
+            DispatchOnController = onController;
             DispatchOnButton = onButton;
             DispatchOnStick = onStick;
             DispatchOnTrigger = onTrigger;
@@ -61,7 +66,6 @@ namespace InputManager
                     GamePadState testState = GamePad.GetState(testPlayerIndex);
                     if (testState.IsConnected)
                     {
-                        DebugTools.Log("GamePad found " + testPlayerIndex);
                         playerIndex[i] = testPlayerIndex;
                         playerIndexSet[i] = true;
                     }
@@ -71,6 +75,7 @@ namespace InputManager
                     prevState[i] = state[i];
                     state[i] = GamePad.GetState(playerIndex[i]);
 
+                    HandleControllers(i);
                     HandleButtons(i);
                     HandleSticks(i);
                     HandleTriggers(i);
@@ -80,6 +85,19 @@ namespace InputManager
         #endregion
 
         #region Class Methods
+        private void HandleControllers(int i)
+        {
+            if (!prevState[i].IsConnected && state[i].IsConnected)
+            {
+                DispatchOnController(i, ControllerState.Connection);
+            }
+            else if(prevState[i].IsConnected && !state[i].IsConnected)
+            {
+                DispatchOnController(i, ControllerState.Disconnection);
+                playerIndexSet[i] = false;
+            }
+        }
+
         private void HandleButtons(int i)
         {
             HandleButton(i, state[i].Buttons.A, prevState[i].Buttons.A, InputButton.A);
@@ -103,15 +121,15 @@ namespace InputManager
         {
             if (current == ButtonState.Pressed && prev == ButtonState.Released)
             {
-                DispatchOnButton(i, type, State.Down);
+                DispatchOnButton(i, type, InputState.Down);
             }
             else if (current == ButtonState.Pressed)
             {
-                DispatchOnButton(i, type, State.Pressed);
+                DispatchOnButton(i, type, InputState.Pressed);
             }
             else if (current == ButtonState.Released && prevState[i].IsConnected && prev == ButtonState.Pressed)
             {
-                DispatchOnButton(i, type, State.Released);
+                DispatchOnButton(i, type, InputState.Released);
             }
         }
 
@@ -125,74 +143,74 @@ namespace InputManager
         {
             if (current.X > 0 && prev.X == 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Right, State.Down);
+                DispatchOnStick(i, inputStick, InputDirection.Right, InputState.Down);
             }
             else if (current.X < 0 && prev.X == 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Left, State.Down);
+                DispatchOnStick(i, inputStick, InputDirection.Left, InputState.Down);
             }
             else if (current.X > 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Right, State.Pressed);
+                DispatchOnStick(i, inputStick, InputDirection.Right, InputState.Pressed);
             }
             else if (current.X < 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Left, State.Pressed);
+                DispatchOnStick(i, inputStick, InputDirection.Left, InputState.Pressed);
             }
             else if (current.X == 0 && prevState[i].IsConnected && prev.X > 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Right, State.Released);
+                DispatchOnStick(i, inputStick, InputDirection.Right, InputState.Released);
             }
             else if (current.X == 0 && prevState[i].IsConnected && prev.X < 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Left, State.Released);
+                DispatchOnStick(i, inputStick, InputDirection.Left, InputState.Released);
             }
 
             if (current.Y > 0 && prev.Y == 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Up, State.Down);
+                DispatchOnStick(i, inputStick, InputDirection.Up, InputState.Down);
             }
             else if (current.Y < 0 && prev.Y == 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Down, State.Down);
+                DispatchOnStick(i, inputStick, InputDirection.Down, InputState.Down);
             }
             else if (current.Y > 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Up, State.Pressed);
+                DispatchOnStick(i, inputStick, InputDirection.Up, InputState.Pressed);
             }
             else if (current.Y < 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Down, State.Pressed);
+                DispatchOnStick(i, inputStick, InputDirection.Down, InputState.Pressed);
             }
             else if (current.Y == 0 && prevState[i].IsConnected && prev.Y > 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Up, State.Released);
+                DispatchOnStick(i, inputStick, InputDirection.Up, InputState.Released);
             }
             else if (current.Y == 0 && prevState[i].IsConnected && prev.Y < 0)
             {
-                DispatchOnStick(i, inputStick, InputDirection.Down, State.Released);
+                DispatchOnStick(i, inputStick, InputDirection.Down, InputState.Released);
             }
         }
 
         private void HandleTriggers(int i)
         {
-            HandleTrigger(i, Trigger.Left, state[i].Triggers.Left, prevState[i].Triggers.Left);
-            HandleTrigger(i, Trigger.Right, state[i].Triggers.Right, prevState[i].Triggers.Right);
+            HandleTrigger(i, InputTrigger.Left, state[i].Triggers.Left, prevState[i].Triggers.Left);
+            HandleTrigger(i, InputTrigger.Right, state[i].Triggers.Right, prevState[i].Triggers.Right);
         }
 
-        private void HandleTrigger(int i, Trigger type, float trigger, float prevTrigger)
+        private void HandleTrigger(int i, InputTrigger type, float trigger, float prevTrigger)
         {
             if (trigger > 0 && prevTrigger == 0)
             {
-                DispatchOnTrigger(i, type, State.Down);
+                DispatchOnTrigger(i, type, InputState.Down);
             }
             else if (trigger > 0)
             {
-                DispatchOnTrigger(i, type, State.Pressed);
+                DispatchOnTrigger(i, type, InputState.Pressed);
             }
             else if (trigger == 0 && prevState[i].IsConnected && prevTrigger > 0)
             {
-                DispatchOnTrigger(i, type, State.Released);
+                DispatchOnTrigger(i, type, InputState.Released);
             }
         }
         #endregion

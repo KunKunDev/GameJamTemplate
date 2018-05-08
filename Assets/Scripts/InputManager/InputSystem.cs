@@ -31,7 +31,7 @@ namespace InputManager
             inputMonitor = monitorParent.AddComponent<InputMonitor>();
 
             inputMonitor.Init();
-            inputMonitor.InitButtons(DispatchOnButton, DispatchOnStick, DispatchOnTrigger);
+            inputMonitor.InitHandlers(DispatchOnController, DispatchOnButton, DispatchOnStick, DispatchOnTrigger);
         }
         #endregion
 
@@ -53,18 +53,25 @@ namespace InputManager
         #endregion
 
         #region Delegates
-        public delegate void ButtonHandler(int index, InputButton button, State state);
-        public delegate void StickHandler(int index, InputStick stick, InputDirection direction, State state);
-        public delegate void TriggerHandler(int index, Trigger trigger, State state);
+        public delegate void ControllerHandler(int index, ControllerState controllerState);
+        public delegate void ButtonHandler(int index, InputButton button, InputState state);
+        public delegate void StickHandler(int index, InputStick stick, InputDirection direction, InputState state);
+        public delegate void TriggerHandler(int index, InputTrigger trigger, InputState state);
         #endregion
 
         #region private Events
+        private static event ControllerHandler _OnController;
         private static event ButtonHandler _OnButton;
         private static event StickHandler _OnStick;
         private static event TriggerHandler _OnTrigger;
         #endregion
 
         #region public Events
+        public static event ControllerHandler OnController
+        {
+            add { InitInputMonitor(); _OnController += value; }
+            remove { _OnController -= value; }
+        }
         public static event ButtonHandler OnButton
         {
             add { InitInputMonitor(); _OnButton += value; }
@@ -83,7 +90,7 @@ namespace InputManager
         #endregion
 
         #region Event Dispatches
-        private static void DispatchOnButton(int index, InputButton button, State state)
+        private static void DispatchOnButton(int index, InputButton button, InputState state)
         {
             if (_OnButton != null)
             {
@@ -94,7 +101,7 @@ namespace InputManager
                 DebugTools.Log("No Listeners for DispatchOnButton");
             }
         }
-        private static void DispatchOnStick(int index, InputStick stick, InputDirection direction, State state)
+        private static void DispatchOnStick(int index, InputStick stick, InputDirection direction, InputState state)
         {
             if (_OnStick != null)
             {
@@ -102,10 +109,10 @@ namespace InputManager
             }
             else
             {
-                DebugTools.Log("No Listeners for DispatchOnButton");
+                DebugTools.Log("No Listeners for DispatchOnStick");
             }
         }
-        private static void DispatchOnTrigger(int index, Trigger trigger, State state)
+        private static void DispatchOnTrigger(int index, InputTrigger trigger, InputState state)
         {
             if (_OnStick != null)
             {
@@ -113,7 +120,18 @@ namespace InputManager
             }
             else
             {
-                DebugTools.Log("No Listeners for DispatchOnButton");
+                DebugTools.Log("No Listeners for DispatchOnTrigger");
+            }
+        }
+        private static void DispatchOnController(int index, ControllerState controllerState)
+        {
+            if (_OnController != null)
+            {
+                _OnController(index, controllerState);
+            }
+            else
+            {
+                DebugTools.Log("No Listeners for DispatchOnController");
             }
         }
         #endregion

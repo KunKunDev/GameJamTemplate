@@ -1,5 +1,11 @@
 ﻿namespace InputManager
 {
+    public enum ControllerState
+    {
+        Connection,
+        Disconnection
+    }
+
     public enum InputButton
     {
         A,
@@ -33,13 +39,13 @@
         Left
     }
 
-    public enum Trigger
+    public enum InputTrigger
     {
         Left,
         Right
     }
 
-    public enum State
+    public enum InputState
     {
         Down,
         Pressed,

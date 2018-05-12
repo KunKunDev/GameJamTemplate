@@ -1,11 +1,8 @@
-﻿using System;
-using Debugging;
-using UnityEngine;
-using XInputDotNetPure;
+﻿using XInputDotNetPure;
 
 namespace InputManager
 {
-    public class InputMonitor : MonoBehaviour
+    public class InputMonitor 
     {
         #region Settings from the InputManager ConfigFile
         private InputConfig inputConfig;
@@ -24,6 +21,9 @@ namespace InputManager
         private InputSystem.ButtonHandler DispatchOnButton;
         private InputSystem.StickHandler DispatchOnStick;
         private InputSystem.TriggerHandler DispatchOnTrigger;
+
+        private InputSystem.StickAxisHandler DispatchOnStickAxis;
+        private InputSystem.TriggerAxisHandler DispatchOnTriggerAxis;
         #endregion
 
         #region Init Methods
@@ -40,18 +40,22 @@ namespace InputManager
 
         public void InitHandlers(InputSystem.ControllerHandler onController,
                                 InputSystem.ButtonHandler onButton,
-                                InputSystem.StickHandler onStick, 
-                                InputSystem.TriggerHandler onTrigger)
+                                InputSystem.StickHandler onStick,
+                                InputSystem.TriggerHandler onTrigger,
+                                InputSystem.StickAxisHandler onStickAxis,
+                                InputSystem.TriggerAxisHandler onTriggerAxis)
         {
             DispatchOnController = onController;
             DispatchOnButton = onButton;
             DispatchOnStick = onStick;
             DispatchOnTrigger = onTrigger;
+            DispatchOnStickAxis = onStickAxis;
+            DispatchOnTriggerAxis = onTriggerAxis;
         }
         #endregion
 
         #region Mono Methods
-        private void Update()
+        public void Update()
         {
             if (!InputSystem.AreInputsEnabled())
             {
@@ -79,6 +83,8 @@ namespace InputManager
                     HandleButtons(i);
                     HandleSticks(i);
                     HandleTriggers(i);
+                    HandleSticksAxis(i);
+                    HandleTriggersAxis(i);
                 }
             }
         }
@@ -91,7 +97,7 @@ namespace InputManager
             {
                 DispatchOnController(i, ControllerState.Connection);
             }
-            else if(prevState[i].IsConnected && !state[i].IsConnected)
+            else if (prevState[i].IsConnected && !state[i].IsConnected)
             {
                 DispatchOnController(i, ControllerState.Disconnection);
                 playerIndexSet[i] = false;
@@ -212,6 +218,24 @@ namespace InputManager
             {
                 DispatchOnTrigger(i, type, InputState.Released);
             }
+        }
+
+        private void HandleSticksAxis(int i)
+        {
+            HandleStickAxis(i, InputStick.LeftStick, state[i].ThumbSticks.Left);
+            HandleStickAxis(i, InputStick.RightStick, state[i].ThumbSticks.Right);
+        }
+
+        private void HandleStickAxis(int i, InputStick stick, GamePadThumbSticks.StickValue current)
+        {
+            DispatchOnStickAxis(i, stick, InputAxis.X, current.X);
+            DispatchOnStickAxis(i, stick, InputAxis.Y, current.Y);
+        }
+
+        private void HandleTriggersAxis(int i)
+        {
+            DispatchOnTriggerAxis(i, InputTrigger.Left, state[i].Triggers.Left);
+            DispatchOnTriggerAxis(i, InputTrigger.Right, state[i].Triggers.Right);
         }
         #endregion
     }

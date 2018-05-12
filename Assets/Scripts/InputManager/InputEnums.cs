@@ -31,6 +31,12 @@
         RightStick
     }
 
+    public enum InputAxis
+    {
+        X,
+        Y
+    }
+
     public enum InputDirection
     {
         Up,

@@ -6,6 +6,7 @@ namespace InputManager
     {
         #region Variables
         private static InputMonitor inputMonitor;
+        private static KeyboardInputMonitor keyboardInputMonitor;
         private static bool inputsEnabled = true;
         #endregion        
 
@@ -24,6 +25,9 @@ namespace InputManager
             inputMonitor = new InputMonitor();
             inputMonitor.Init();
             inputMonitor.InitHandlers(DispatchOnController, DispatchOnButton, DispatchOnStick, DispatchOnTrigger, DispatchOnStickAxis, DispatchOnTriggerAxis);
+
+            keyboardInputMonitor = new KeyboardInputMonitor();
+            keyboardInputMonitor.InitHandlers(DispatchOnController, DispatchOnButton, DispatchOnStick, DispatchOnTrigger, DispatchOnStickAxis, DispatchOnTriggerAxis);
         }
         #endregion
 
@@ -31,6 +35,7 @@ namespace InputManager
         public static void Update()
         {
             inputMonitor.Update();
+            keyboardInputMonitor.Update();
         }
 
         public static void DisableInputs()

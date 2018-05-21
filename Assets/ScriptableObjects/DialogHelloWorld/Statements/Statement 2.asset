@@ -1,0 +1,15 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43a7e2e1943610f4d8008d62d4f6d1c8, type: 3}
+  m_Name: Statement 2
+  m_EditorClassIdentifier: 
+  text: Kill all humans
+  speaker: {fileID: 11400000, guid: 92a31f1fc96ddfe4da048271232c869b, type: 2}

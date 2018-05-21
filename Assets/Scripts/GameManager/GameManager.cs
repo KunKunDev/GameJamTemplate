@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using InputManager;
+﻿using InputManager;
+using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
